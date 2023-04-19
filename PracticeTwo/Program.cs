@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,8 @@ var configurationBuilder = new ConfigurationBuilder()
 .SetBasePath(builder.Environment.ContentRootPath)
 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
 .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: true)
-.AddEnvironmentVariables();   
+.AddEnvironmentVariables(); 
+
 IConfiguration Configuration = configurationBuilder.Build();
 
 string siteTitle = Configuration.GetSection("Title").Value;
@@ -28,7 +30,16 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+//Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+builder.Host.UseSerilog();
+
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "QA" ||
